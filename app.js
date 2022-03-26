@@ -18,7 +18,7 @@ app.get('/login', function (req, res) {
     })
 })
 
-app.get('/', validateJWT, (req, res) => {
+app.get('/action', validateJWT, (req, res) => {
     return res.json({status: 200, message: "Auth success"});
 })
 
