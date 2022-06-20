@@ -11,6 +11,6 @@ app.listen(3000, async () => {
         await redis.connect();
         console.log('---- redis connected!!! -----');
     } catch (e) {
-        console.log("ERROR: ", e.message);
+        throw Error(e.message);
     }
 })
