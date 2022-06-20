@@ -1,20 +1,11 @@
 const express = require('express');
-// const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config();
-const routes = require('./modules/index');
-// const privateKey = 'hung';
-//
-// function validateJWT(req, res, next) {
-//     const token = req.query.token;
-//     const decode = jwt.verify(token, privateKey);
-//     console.log(decode);
-//     next();
-// }
+const redis = require('./config/redis.config');
 
 require('./modules')(app);
 
-
-app.listen(3000, () => {
+app.listen(3000, async () => {
+    await redis.connect();
     console.log(`app is running at port 3000`);
 })

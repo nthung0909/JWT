@@ -1,11 +1,8 @@
 const JWT = require('jsonwebtoken');
-const redis = require('redis');
-const client = redis.createClient();
-client.on('error', (err) => console.log('Redis Client Error', err));
-await client.connect();
+const redisClient = require('../config/redis.config');
 
 module.exports = {
-    generateToken, verifyToken, parseToken
+    generateToken, verifyToken
 }
 
 async function verifyToken (req, res, next) {
@@ -17,24 +14,29 @@ async function verifyToken (req, res, next) {
     if(!tokenParse) {
         return res.status(401).json({message: 'token expired'});
     }
+    const checkRedis = await redisClient.get(token);
+    if(!checkRedis) {
+        return res.status(401).json({message: 'token expired'});
+    }
 
     next();
 }
 async function generateToken(data) {
-    const payload = {
-        username: data.username,
-        password: data.password
-    }
-    return {
-        accessToken: await JWT.sign({
+    try {
+        const payload = {
+            username: data.username,
+            password: data.password
+        }
+        const accessToken = await JWT.sign({
             ...payload,
             tokenType: 'accessToken'
-        }, process.env.JWT_SECRET, {expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRE}),
+        }, process.env.JWT_SECRET, {expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRE})
+        /*** save access token & refresh token to redis ***/
+        await redisClient.set(accessToken, 1);
 
-        refreshToken: await JWT.sign({
-            ...payload,
-            tokenType: 'refreshToken'
-        }, process.env.JWT_SECRET, {expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRE}),
+        return accessToken;
+    } catch (e) {
+        console.log(e);
     }
 }
 
