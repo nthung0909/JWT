@@ -7,6 +7,10 @@ require('./modules')(app);
 
 app.listen(3000, async () => {
     console.log(`app is running at port 3000`);
-    await redis.connect();
-    console.log('---- redis connected!!! -----');
+    try {
+        await redis.connect();
+        console.log('---- redis connected!!! -----');
+    } catch (e) {
+        console.log("ERROR: ", e.message);
+    }
 })
